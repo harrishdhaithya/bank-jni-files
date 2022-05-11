@@ -124,6 +124,24 @@ public class Bank {
 			return false;
 		}
 	}
+	public static List<Transaction> getTransactionsByDate(String date){
+		if(loggedInAdmin==null){
+			System.out.println("Illegal Access...");
+			return null;
+		}
+		TransactionDao tdao = Singleton.getTransactionDao();
+		List<Transaction> trans = tdao.getTransactionsByDate(date);
+		return trans;
+	}
+	public static List<Transaction> getTransactionByAccno(String accno){
+		if(loggedInUser==null&&loggedInAdmin==null){
+			System.out.println("Illegal Access...");
+			return null;
+		}
+		TransactionDao tdao = Singleton.getTransactionDao();
+		List<Transaction> trans = tdao.getTransactionsByAccno(accno);
+		return trans;
+	}
 	public static void showBalance(String accno) {
 		if(loggedInUser==null) {
 			System.out.println("Illegal Access...");

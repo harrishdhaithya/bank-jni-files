@@ -31,6 +31,53 @@ public class TransactionDao {
         }
         return li;        
     }
+    public List<Transaction> getTransactionsByDate(String date){
+        List<Transaction> li = new ArrayList<>();
+        try{
+            Connection conn = DbConnection.getConnection();
+            String sql = "SELECT * FROM public.\"Transaction\" WHERE date=?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setObject(1,LocalDate.parse(date));
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()){
+                int id = rs.getInt("id");
+                String src = rs.getString("src");
+                String dest = rs.getString("dest");
+                double amount = rs.getDouble("amount");
+                String time = rs.getString("time");
+                Transaction t = new Transaction(id,src,dest,amount,date,time);
+                li.add(t);
+	        }
+        }catch(Exception e){
+            System.out.println("Not able to fetch transaction...");
+            System.out.println(e);
+       }
+       return li;
+   }
+   public List<Transaction> getTransactionsByAccno(String accno){
+       List<Transaction> li = new ArrayList<>();
+       try{
+        Connection conn = DbConnection.getConnection();
+        String sql = "SELECT * FROM public.\"Transaction\" WHERE src=?";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setString(1,accno);
+        ResultSet rs = ps.executeQuery();
+        while(rs.next()){
+            int id = rs.getInt("id");
+            String src = rs.getString("src");
+            String dest = rs.getString("dest");
+            double amount = rs.getDouble("amount");
+            String date = rs.getString("date");
+            String time = rs.getString("time");
+            Transaction t = new Transaction(id,src,dest,amount,date,time);
+            li.add(t);
+        }
+       }catch(Exception e){
+            System.out.println("Not able to fetch user...");
+            System.out.println(e);
+       }
+       return li;
+   }
     public boolean performTransaction(User src,User dest,double amount) throws SQLException {
         Connection conn = DbConnection.getConnection();
         conn.setAutoCommit(false);

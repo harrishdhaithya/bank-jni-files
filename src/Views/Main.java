@@ -78,7 +78,9 @@ public class Main {
 		System.out.println("1. See All Users");
 		System.out.println("2. Search for a User");
 		System.out.println("3. View all Transactions");
-		System.out.println("4. Logout");
+		System.out.println("4. Search Transactions by date");
+		System.out.println("5. Search Transaction by User");
+		System.out.println("6. Logout");
 		System.out.println("Enter Your Choice: ");
 		int ch = in.nextInt();
 		if(ch==1) {
@@ -99,10 +101,40 @@ public class Main {
 			System.out.println(u);
 		}else if(ch==3) {
 			List<Transaction> li = Bank.getAllTransaction();
+			if(li==null){
+				System.out.println("No Transactions found...");
+				continue;
+			}
 			for(Transaction t:li){
 				System.out.println(t);
 			}
 		}else if(ch==4){
+			System.out.println("Enter the Date in YYYY-MM-DD format: ");
+			in.nextLine();
+			String date = in.nextLine();
+			List<Transaction> tran = Bank.getTransactionsByDate(date);
+			if(tran==null){
+				System.out.println("No Transactions found...");
+				continue;
+			}
+			for(Transaction t:tran){
+				System.out.println(t);
+				System.out.println();
+			}
+		}else if(ch==5){
+			System.out.println("Enter the Account Number for Transaction: ");
+			in.nextLine();
+			String accno = in.nextLine();
+			List<Transaction> tran = Bank.getTransactionByAccno(accno);
+			if(tran==null){
+				System.out.println("No Transactions found...");
+				continue;
+			}
+			for(Transaction t:tran){
+				System.out.println(t);
+				System.out.println();
+			}
+		}else if(ch==6){
 			Bank.adminLogout();
 			flag=false;
 			showHome();
@@ -119,7 +151,8 @@ public class Main {
 		System.out.println("2. Withdraw Amount");
 		System.out.println("3. View Balance");
 		System.out.println("4. Make Transaction");
-		System.out.println("5. Logout");
+		System.out.println("5. View My Transactions");
+		System.out.println("6. Logout");
 		System.out.println("Enter Your choice: ");
 		int ch = in.nextInt();
 		if(ch == 1) {
@@ -151,11 +184,19 @@ public class Main {
 				System.out.println("Transaction Failed...");
 			}
 		}else if(ch==5) {
+			List<Transaction> trans = Bank.getTransactionByAccno(Bank.loggedInUser.getAccno());
+			if(trans==null){
+				System.out.println("No Transaction found...");
+				continue;
+			}
+			for(Transaction t:trans){
+				System.out.println(t);
+				System.out.println();
+			}
+		}else if(ch==6){
 			Bank.userLogout();
 			showHome();
 			return;
-		}else {
-			System.out.println("Enter a Valid Choice");
 		}
 		}
 		
