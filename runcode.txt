@@ -1,0 +1,9 @@
+//Set classpath
+set classpath=external/*;target
+set javadirs=src/com/model/* src/com/controller/* src/com/Singleton/* src/com/dao/* src/Views/*
+
+//Compile
+javac -cp %classpath% -d target %javadirs%
+
+//Run
+java -cp %classpath% Views.Main
