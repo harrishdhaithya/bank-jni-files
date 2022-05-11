@@ -118,8 +118,7 @@ public class Bank {
 		}
 		TransactionDao tdao = Singleton.getTransactionDao();
 		try{
-			tdao.performTransaction(src, dest, amount);
-			return true;
+			return tdao.performTransaction(src, dest, amount);
 		}catch(Exception e){
 			System.out.println(e);
 			return false;
