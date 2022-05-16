@@ -1,7 +1,5 @@
 package Views;
 
-
-import java.util.List;
 import java.util.Scanner;
 import com.controller.Bank;
 import com.model.User;
@@ -84,7 +82,7 @@ public class Main {
 		System.out.println("Enter Your Choice: ");
 		int ch = in.nextInt();
 		if(ch==1) {
-			List<User> al = Bank.getAllUsers();
+			User[] al = Bank.getAllUsers();
 			if(al == null) {
 				System.out.println("No Accounts Available");
 			}
@@ -100,7 +98,7 @@ public class Main {
 			User u = Bank.getAccDetails(accno);
 			System.out.println(u);
 		}else if(ch==3) {
-			List<Transaction> li = Bank.getAllTransaction();
+			Transaction[] li = Bank.getAllTransaction();
 			if(li==null){
 				System.out.println("No Transactions found...");
 				continue;
@@ -112,7 +110,7 @@ public class Main {
 			System.out.println("Enter the Date in YYYY-MM-DD format: ");
 			in.nextLine();
 			String date = in.nextLine();
-			List<Transaction> tran = Bank.getTransactionsByDate(date);
+			Transaction[] tran = Bank.getTransactionsByDate(date);
 			if(tran==null){
 				System.out.println("No Transactions found...");
 				continue;
@@ -125,7 +123,7 @@ public class Main {
 			System.out.println("Enter the Account Number for Transaction: ");
 			in.nextLine();
 			String accno = in.nextLine();
-			List<Transaction> tran = Bank.getTransactionByAccno(accno);
+			Transaction[] tran = Bank.getTransactionByAccno(accno);
 			if(tran==null){
 				System.out.println("No Transactions found...");
 				continue;
@@ -184,7 +182,7 @@ public class Main {
 				System.out.println("Transaction Failed...");
 			}
 		}else if(ch==5) {
-			List<Transaction> trans = Bank.getTransactionByAccno(Bank.loggedInUser.getAccno());
+			Transaction[] trans = Bank.getTransactionByAccno(Bank.loggedInUser.getAccno());
 			if(trans==null){
 				System.out.println("No Transaction found...");
 				continue;

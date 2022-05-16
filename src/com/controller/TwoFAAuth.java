@@ -3,8 +3,7 @@ package com.controller;
 import java.security.SecureRandom;
 import java.util.Scanner;
 import com.Singleton.Singleton;
-import com.dao.AdminSecretDao;
-import com.dao.UserSecretDao;
+import com.fileaccess.FileAccess;
 import com.model.Admin;
 import com.model.User;
 import org.apache.commons.codec.binary.Base32;
@@ -28,8 +27,8 @@ public class TwoFAAuth {
 	}
 	public static boolean twoFA(User user) {
 //		String secret = Bank.userSecrets.get(user);
-		UserSecretDao usdao = Singleton.getUserSecretDao();
-		String secret = usdao.getSecret(user.getAccno());
+		FileAccess fa = Singleton.getFileAccess();
+		String secret = fa.getUserSecret(user.getAccno()).getSecret();
 		if(secret==null){
 			return false;
 		}
@@ -45,9 +44,8 @@ public class TwoFAAuth {
 		return false;
 	}
 	public static boolean twoFA(Admin admin) {
-//		String secret = Bank.adminSecrets.get(admin);
-		AdminSecretDao asdao = Singleton.getAdminSecretDao();
-		String secret = asdao.getSecret(admin.getEmpid());
+		FileAccess fa = Singleton.getFileAccess();
+		String secret = fa.getAdminSecret(admin.getEmpid()).getSecret();
 		if(secret==null){
 			System.out.println("No Secrets found...");
 			return false;

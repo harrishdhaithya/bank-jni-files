@@ -1,18 +1,33 @@
 package com.model;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Random;
+
 public class Transaction {
-    private int id;
+    private String id;
     private String src;
     private String dest;
     private double amount;
     private String date;
     private String time;
+    private static String createID(){
+		String accno = "";
+		Random rand = new Random();
+		for(int i=0;i<10;i++){
+			accno+=rand.nextInt(10);
+		}
+		return accno;
+	}
     public Transaction(String src,String dest,double amount){
+        this.id=createID();
         this.src=src;
         this.dest=dest;
         this.amount=amount;
+        this.date = LocalDate.now().toString();
+        this.time = LocalTime.now().toString();
     }
-    public Transaction(int id,String src,String dest,double amount,String date,String time){
+    public Transaction(String id,String src,String dest,double amount,String date,String time){
         this.id=id;
         this.src=src;
         this.dest=dest;
@@ -20,7 +35,7 @@ public class Transaction {
         this.date=date;
         this.time=time;
     }
-    public void setId(int id){
+    public void setId(String id){
         this.id=id;
     }
     public void setSrc(String u){
@@ -38,7 +53,7 @@ public class Transaction {
     public void setTime(String time){
         this.time=time;
     }
-    public int getId(){
+    public String getId(){
         return id;
     }
     public String getSrc(){

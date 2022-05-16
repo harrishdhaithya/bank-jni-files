@@ -1,11 +1,6 @@
 package com.controller;
-
-import java.util.List;
 import com.Singleton.Singleton;
-import com.dao.AdminDao;
-import com.dao.TransactionDao;
-import com.dao.UserDao;
-import com.dao.UserSecretDao;
+import com.fileaccess.FileAccess;
 import com.model.Admin;
 import com.model.User;
 import com.model.UserSecret;
@@ -20,18 +15,17 @@ public class Bank {
 		}
 		User user = null;
 		UserSecret us = null;
-		UserDao u = Singleton.getUserDao();
-		UserSecretDao usdao = Singleton.getUserSecretDao();
+		FileAccess fa = Singleton.getFileAccess();
 		String secret = TwoFAAuth.generateSecretKey();
 		if(Otp.evalOtp(email)) {
 			user = new User(fname,lname,phone,email,password,balance);
 			us = new UserSecret(user.getAccno(),secret);
-			boolean success = u.saveUser(user);
+			boolean success = fa.addUser(user);
 			if(!success){
 				return false;
 			}
 			System.out.println("Your Secret for Google Authenticator is "+secret);
-			return success&&usdao.saveSecret(us);
+			return success&&fa.addUserSecret(us);
 		}
 		return false;
 	}
@@ -39,48 +33,62 @@ public class Bank {
 		if(loggedInUser==null&&loggedInAdmin==null) {
 			return null;
 		}
-		UserDao u = Singleton.getUserDao();
-		User user = u.getUserByAccno(accno);
+		FileAccess fa = Singleton.getFileAccess();
+		User user = fa.getUserByAccno(accno);
+		if(user==null){
+			System.out.println("No Users found...");
+		}
 		return user;
 	}
-	public static List<User> getAllUsers(){
-		UserDao u = Singleton.getUserDao();
-		List<User> users = u.getAllUsers();
+	public static User[] getAllUsers(){
+		FileAccess fa = Singleton.getFileAccess();
+		User[] users = fa.getUsers();
 		return users;
 	}
-	public static List<Transaction> getAllTransaction(){
+	public static Transaction[] getAllTransaction(){
 		if(loggedInAdmin==null){
 			System.out.println("Illegal Access");
 			return null;
 		}
-		TransactionDao td = Singleton.getTransactionDao();
-		List<Transaction> t = td.getAllTransaction();
-		return t;
+		FileAccess fa = Singleton.getFileAccess();
+		Transaction[] transactions = fa.getTransactions();
+		return transactions;
+	}
+	public static User getUserByAccno(User[] users,String accno){
+		for(User user:users){
+			if(user.getAccno().equals(accno)){
+				return user;
+			}
+		}
+		return null;
 	}
 	public static boolean deposit(String accno,double amount) {
 		if(loggedInUser==null) {
+			System.out.println("Illegal Access...");
 			return false;
 		}
-		UserDao u = Singleton.getUserDao();
-		User user = u.getUserByAccno(accno);
+		FileAccess fa = Singleton.getFileAccess();
+		User[] users = fa.getUsers();
+		User user = getUserByAccno(users,accno);
 		user.setBalance(user.getBalance()+amount);
-		return u.saveUser(user);
+		return fa.saveUsers(users);
 	}
 	public static boolean withdraw(String accno,double amount) {
 		if(loggedInUser==null) {
 			return false;
 		}
-		UserDao u = Singleton.getUserDao();
-		User user = u.getUserByAccno(accno);
+		FileAccess fa = Singleton.getFileAccess();
+		User[] users = fa.getUsers();
+		User user = getUserByAccno(users,accno);
 		if(user.getBalance()<amount){
 			return false;
 		}
 		user.setBalance(user.getBalance()-amount);
-		return u.saveUser(user);
+		return fa.saveUsers(users);
 	}
 	public static boolean userlogin(String email,String password) {
-		UserDao u = Singleton.getUserDao();
-		User user = u.getUserByEmail(email);
+		FileAccess fa = Singleton.getFileAccess();
+		User user = fa.getUserByEmail(email);
 		if(user==null){
 			return false;
 		}
@@ -93,11 +101,13 @@ public class Bank {
 		return false;
 	}
 	public static boolean adminLogin(String email,String password) {
-		AdminDao a = Singleton.getAdminDao();
-		Admin admin = a.getAdminByEmail(email);
+		FileAccess fa = Singleton.getFileAccess();
+		Admin admin = fa.getAdminByEmail(email);
 		if(admin==null){
 			return false;
 		}
+		System.out.println(admin.getPasswordHash());
+		System.out.println(admin.getEmail());
 		if(admin.evalPassword(password)){
 			if(TwoFAAuth.twoFA(admin)){
 				loggedInAdmin=admin;
@@ -110,46 +120,52 @@ public class Bank {
 		if(loggedInUser==null){
 			return false;
 		}
-		UserDao u = Singleton.getUserDao();
-		User src = u.getUserByAccno(loggedInUser.getAccno());
-		User dest = u.getUserByAccno(to);
+		FileAccess fa = Singleton.getFileAccess();
+		User[] users = fa.getUsers();
+		User src = getUserByAccno(users,loggedInUser.getAccno());
+		User dest = getUserByAccno(users,to);
+		if(src.getAccno().equals(to)){
+			System.out.println("Transaction cannot be done within same account...");
+			return false;
+		}
 		if(src==null||dest==null){
 			return false;
 		}
-		TransactionDao tdao = Singleton.getTransactionDao();
-		try{
-			return tdao.performTransaction(src, dest, amount);
-		}catch(Exception e){
-			System.out.println(e);
+		if(src.getBalance()<amount){
+			System.out.println("No Sufficient Balance...");
 			return false;
 		}
+		src.setBalance(src.getBalance()+amount);
+		dest.setBalance(dest.getBalance()+amount);
+		Transaction t = new Transaction(src.getAccno(), to, amount);
+		return fa.saveUsers(users)&&fa.writeTransaction(t);
 	}
-	public static List<Transaction> getTransactionsByDate(String date){
+	public static Transaction[] getTransactionsByDate(String date){
 		if(loggedInAdmin==null){
 			System.out.println("Illegal Access...");
 			return null;
 		}
-		TransactionDao tdao = Singleton.getTransactionDao();
-		List<Transaction> trans = tdao.getTransactionsByDate(date);
-		return trans;
+		FileAccess fa = Singleton.getFileAccess();
+		Transaction[] transactions = fa.getTransactionsByDate(date);
+		return transactions;
 	}
-	public static List<Transaction> getTransactionByAccno(String accno){
+	public static Transaction[] getTransactionByAccno(String accno){
 		if(loggedInUser==null&&loggedInAdmin==null){
 			System.out.println("Illegal Access...");
 			return null;
 		}
-		TransactionDao tdao = Singleton.getTransactionDao();
-		List<Transaction> trans = tdao.getTransactionsByAccno(accno);
-		return trans;
+		FileAccess fa = Singleton.getFileAccess();
+		Transaction[] transactions = fa.getTransactionsByAccno(accno);
+		return transactions;
 	}
 	public static void showBalance(String accno) {
 		if(loggedInUser==null) {
 			System.out.println("Illegal Access...");
 			return;
 		}
-		UserDao u = Singleton.getUserDao();
-		User user = u.getUserByAccno(accno);
-		System.out.println(user);
+		FileAccess fa = Singleton.getFileAccess();
+		User u = fa.getUserByAccno(accno);
+		System.out.println(u);
 	}
 	public static void userLogout() {
 		loggedInUser=null;
