@@ -106,8 +106,6 @@ public class Bank {
 		if(admin==null){
 			return false;
 		}
-		System.out.println(admin.getPasswordHash());
-		System.out.println(admin.getEmail());
 		if(admin.evalPassword(password)){
 			if(TwoFAAuth.twoFA(admin)){
 				loggedInAdmin=admin;
