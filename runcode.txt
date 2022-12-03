@@ -6,4 +6,4 @@ set javadirs=src/com/model/* src/com/fileaccess/* src/com/Singleton/* src/com/co
 javac -h jni -d target %javadirs%
 g++ -c -I"%JAVA_HOME%\include" -I"%JAVA_HOME%\include\win32" jni/access_files.cpp -o jni/access_files.o
 g++ -shared -o jni/native.dll jni/access_files.o -Wl,--add-stdcall-alias
-java -cp %classpath% -Djava.library.path=jni Views.Main
+java -Djava.library.path=jni Views.Main
